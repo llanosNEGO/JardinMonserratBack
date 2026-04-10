@@ -1,50 +1,81 @@
 from django.db import models
-from matriculas.models import Estudiante
+from core.models import Alumno
+
 
 class ConceptoPago(models.Model):
+    PERIODICIDAD_CHOICES = [
+        ('Mensual', 'Mensual'),
+        ('Trimestral', 'Trimestral'),
+        ('Anual', 'Anual'),
+        ('Único', 'Único'),
+    ]
+    
     nombre = models.CharField(max_length=100, unique=True)
-    descripcion = models.TextField(blank=True, null=True)
-    monto = models.DecimalField(max_digits=10, decimal_places=2)
-    es_mensualidad = models.BooleanField(default=False)
+    monto_base = models.DecimalField(max_digits=10, decimal_places=2)
+    periodicidad = models.CharField(max_length=20, choices=PERIODICIDAD_CHOICES, default='Mensual')
     activo = models.BooleanField(default=True)
-    fecha_creacion = models.DateTimeField(auto_now_add=True)
-    fecha_actualizacion = models.DateTimeField(auto_now=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
     
     class Meta:
         ordering = ['nombre']
+        verbose_name = 'Concepto de Pago'
+        verbose_name_plural = 'Conceptos de Pago'
     
     def __str__(self):
-        return f"{self.nombre} - ${self.monto}"
+        return f"{self.nombre} - ${self.monto_base}"
 
 
 class Pago(models.Model):
-    METODOS_PAGO = [
-        ('EFECTIVO', 'Efectivo'),
-        ('TRANSFERENCIA', 'Transferencia Bancaria'),
-        ('TARJETA', 'Tarjeta Crédito/Débito'),
-        ('CHEQUE', 'Cheque'),
+    METODO_PAGO_CHOICES = [
+        ('Efectivo', 'Efectivo'),
+        ('Transferencia', 'Transferencia'),
+        ('Depósito', 'Depósito'),
+        ('Tarjeta', 'Tarjeta'),
     ]
     
-    ESTADOS_PAGO = [
-        ('PENDIENTE', 'Pendiente'),
-        ('PAGADO', 'Pagado'),
-        ('REEMBOLSADO', 'Reembolsado'),
+    ESTADO_CHOICES = [
+        ('Pagado', 'Pagado'),
+        ('Pendiente', 'Pendiente'),
+        ('Vencido', 'Vencido'),
+        ('Anulado', 'Anulado'),
     ]
     
-    estudiante = models.ForeignKey(Estudiante, on_delete=models.CASCADE, related_name='pagos')
-    concepto = models.ForeignKey(ConceptoPago, on_delete=models.PROTECT, related_name='pagos')
+    alumno = models.ForeignKey(Alumno, on_delete=models.RESTRICT, related_name='pagos')
+    concepto = models.ForeignKey(ConceptoPago, on_delete=models.RESTRICT, related_name='pagos')
     monto = models.DecimalField(max_digits=10, decimal_places=2)
+    mes = models.IntegerField(blank=True, null=True)  # 1=Enero, 2=Febrero... (NULL si no es mensual)
+    anio = models.IntegerField()  # Año del pago
     fecha_pago = models.DateField()
-    metodo_pago = models.CharField(max_length=20, choices=METODOS_PAGO, default='EFECTIVO')
-    estado = models.CharField(max_length=20, choices=ESTADOS_PAGO, default='PENDIENTE')
-    comprobante = models.FileField(upload_to='comprobantes/', blank=True, null=True)
-    referencia = models.CharField(max_length=100, blank=True, null=True)
+    fecha_vencimiento = models.DateField()
+    metodo_pago = models.CharField(max_length=20, choices=METODO_PAGO_CHOICES)
+    numero_recibo = models.CharField(max_length=20, unique=True)
+    comprobante_url = models.FileField(upload_to='comprobantes/', blank=True, null=True)
     observaciones = models.TextField(blank=True, null=True)
-    fecha_creacion = models.DateTimeField(auto_now_add=True)
-    fecha_actualizacion = models.DateTimeField(auto_now=True)
+    estado = models.CharField(max_length=20, choices=ESTADO_CHOICES, default='Pagado')
+    usuario_registro = models.CharField(max_length=50)  # Quién registró el pago
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
     
     class Meta:
         ordering = ['-fecha_pago']
+        indexes = [
+            models.Index(fields=['alumno']),
+            models.Index(fields=['fecha_pago']),
+            models.Index(fields=['estado']),
+            models.Index(fields=['anio', 'mes']),
+        ]
+        constraints = [
+            models.UniqueConstraint(
+                fields=['alumno', 'concepto', 'anio', 'mes'],
+                condition=models.Q(mes__isnull=False),
+                name='unique_pago_mensual',
+                violation_error_message='Este alumno ya tiene un pago registrado para este mes'
+            )
+        ]
+        verbose_name = 'Pago'
+        verbose_name_plural = 'Pagos'
     
     def __str__(self):
-        return f"{self.estudiante.numero_documento} - {self.concepto.nombre} - {self.fecha_pago}"
+        mes_str = f" - Mes {self.mes}" if self.mes else ""
+        return f"{self.alumno.get_full_name()} - {self.concepto.nombre} ({self.anio}){mes_str}"

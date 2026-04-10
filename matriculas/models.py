@@ -1,53 +1,39 @@
 from django.db import models
-
-class Estudiante(models.Model):
-    TIPOS_DOCUMENTO = [
-        ('CC', 'Cédula de Ciudadanía'),
-        ('TI', 'Tarjeta de Identidad'),
-        ('PP', 'Pasaporte'),
-        ('CE', 'Cédula de Extranjería'),
-    ]
-    
-    tipo_documento = models.CharField(max_length=2, choices=TIPOS_DOCUMENTO)
-    numero_documento = models.CharField(max_length=20, unique=True)
-    nombres = models.CharField(max_length=100)
-    apellidos = models.CharField(max_length=100)
-    fecha_nacimiento = models.DateField()
-    grado = models.CharField(max_length=20)
-    direccion = models.TextField()
-    telefono = models.CharField(max_length=20)
-    email = models.EmailField()
-    activo = models.BooleanField(default=True)
-    nombre_acudiente = models.CharField(max_length=100)
-    telefono_acudiente = models.CharField(max_length=20)
-    email_acudiente = models.EmailField()
-    fecha_creacion = models.DateTimeField(auto_now_add=True)
-    fecha_actualizacion = models.DateTimeField(auto_now=True)
-    
-    class Meta:
-        ordering = ['apellidos', 'nombres']
-    
-    def __str__(self):
-        return f"{self.apellidos}, {self.nombres} - {self.numero_documento}"
+from core.models import Alumno, Grado, Seccion
 
 
 class Matricula(models.Model):
-    ESTADOS = [
-        ('ACTIVA', 'Activa'),
-        ('INACTIVA', 'Inactiva'),
-        ('CANCELADA', 'Cancelada'),
+    ESTADO_CHOICES = [
+        ('Activa', 'Activa'),
+        ('Trasladado', 'Trasladado'),
+        ('Retirado', 'Retirado'),
     ]
     
-    estudiante = models.OneToOneField(Estudiante, on_delete=models.CASCADE, related_name='matricula')
+    alumno = models.ForeignKey(Alumno, on_delete=models.RESTRICT, related_name='matriculas')
+    grado = models.ForeignKey(Grado, on_delete=models.RESTRICT, related_name='matriculas')
+    seccion = models.ForeignKey(Seccion, on_delete=models.RESTRICT, related_name='matriculas')
+    anio = models.IntegerField()  # Año lectivo
     fecha_matricula = models.DateField(auto_now_add=True)
-    año_lectivo = models.IntegerField()
-    estado = models.CharField(max_length=20, choices=ESTADOS, default='ACTIVA')
     observaciones = models.TextField(blank=True, null=True)
-    fecha_creacion = models.DateTimeField(auto_now_add=True)
-    fecha_actualizacion = models.DateTimeField(auto_now=True)
+    estado = models.CharField(max_length=20, choices=ESTADO_CHOICES, default='Activa')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
     
     class Meta:
-        ordering = ['-año_lectivo', 'estudiante']
+        ordering = ['-anio', '-fecha_matricula']
+        indexes = [
+            models.Index(fields=['anio']),
+            models.Index(fields=['estado']),
+        ]
+        constraints = [
+            models.UniqueConstraint(
+                fields=['alumno', 'anio'],
+                name='unique_matricula_anio',
+                violation_error_message='El alumno ya está matriculado en este año'
+            )
+        ]
+        verbose_name = 'Matrícula'
+        verbose_name_plural = 'Matrículas'
     
     def __str__(self):
-        return f"{self.estudiante.nombre} - {self.año_lectivo}"
+        return f"{self.alumno.get_full_name()} - Grado {self.grado.nombre} - {self.anio}"

@@ -1,27 +1,28 @@
 from rest_framework import serializers
 from .models import Pago, ConceptoPago
-from matriculas.models import Estudiante
+from core.serializers import AlumnoSerializer
 
 
 class ConceptoPagoSerializer(serializers.ModelSerializer):
     class Meta:
         model = ConceptoPago
         fields = [
-            'id', 'nombre', 'descripcion', 'monto', 'es_mensualidad', 'activo',
-            'fecha_creacion', 'fecha_actualizacion'
+            'id', 'nombre', 'monto_base', 'periodicidad', 'activo',
+            'created_at', 'updated_at'
         ]
-        read_only_fields = ['id', 'fecha_creacion', 'fecha_actualizacion']
+        read_only_fields = ['id', 'created_at', 'updated_at']
 
 
 class PagoSerializer(serializers.ModelSerializer):
+    alumno_detail = AlumnoSerializer(source='alumno', read_only=True)
     concepto_detail = ConceptoPagoSerializer(source='concepto', read_only=True)
-    estudiante_nombre = serializers.CharField(source='estudiante.get_full_name', read_only=True)
     
     class Meta:
         model = Pago
         fields = [
-            'id', 'estudiante', 'estudiante_nombre', 'concepto', 'concepto_detail', 'monto',
-            'fecha_pago', 'metodo_pago', 'estado', 'comprobante', 'referencia', 'observaciones',
-            'fecha_creacion', 'fecha_actualizacion'
+            'id', 'alumno', 'alumno_detail', 'concepto', 'concepto_detail',
+            'monto', 'mes', 'anio', 'fecha_pago', 'fecha_vencimiento',
+            'metodo_pago', 'numero_recibo', 'comprobante_url', 'observaciones',
+            'estado', 'usuario_registro', 'created_at', 'updated_at'
         ]
-        read_only_fields = ['id', 'fecha_creacion', 'fecha_actualizacion']
+        read_only_fields = ['id', 'created_at', 'updated_at']

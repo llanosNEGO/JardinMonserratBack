@@ -1,26 +1,19 @@
 from rest_framework import serializers
-from .models import Estudiante, Matricula
-
-
-class EstudianteSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Estudiante
-        fields = [
-            'id', 'tipo_documento', 'numero_documento', 'nombres', 'apellidos',
-            'fecha_nacimiento', 'grado', 'direccion', 'telefono', 'email', 'activo',
-            'nombre_acudiente', 'telefono_acudiente', 'email_acudiente',
-            'fecha_creacion', 'fecha_actualizacion'
-        ]
-        read_only_fields = ['id', 'fecha_creacion', 'fecha_actualizacion']
+from .models import Matricula
+from core.models import Alumno, Grado, Seccion
+from core.serializers import AlumnoSerializer, GradoSerializer, SeccionSerializer
 
 
 class MatriculaSerializer(serializers.ModelSerializer):
-    estudiante_detail = EstudianteSerializer(source='estudiante', read_only=True)
+    alumno_detail = AlumnoSerializer(source='alumno', read_only=True)
+    grado_detail = GradoSerializer(source='grado', read_only=True)
+    seccion_detail = SeccionSerializer(source='seccion', read_only=True)
     
     class Meta:
         model = Matricula
         fields = [
-            'id', 'estudiante', 'estudiante_detail', 'fecha_matricula', 'año_lectivo',
-            'estado', 'observaciones', 'fecha_creacion', 'fecha_actualizacion'
+            'id', 'alumno', 'alumno_detail', 'grado', 'grado_detail',
+            'seccion', 'seccion_detail', 'anio', 'fecha_matricula',
+            'estado', 'observaciones', 'created_at', 'updated_at'
         ]
-        read_only_fields = ['id', 'fecha_matricula', 'fecha_creacion', 'fecha_actualizacion']
+        read_only_fields = ['id', 'fecha_matricula', 'created_at', 'updated_at']

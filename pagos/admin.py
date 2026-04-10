@@ -4,16 +4,16 @@ from .models import Pago, ConceptoPago
 
 @admin.register(ConceptoPago)
 class ConceptoPagoAdmin(admin.ModelAdmin):
-    list_display = ['nombre', 'monto', 'es_mensualidad', 'activo']
-    list_filter = ['es_mensualidad', 'activo', 'fecha_creacion']
-    search_fields = ['nombre', 'descripcion']
-    readonly_fields = ['fecha_creacion', 'fecha_actualizacion']
+    list_display = ['nombre', 'monto_base', 'periodicidad', 'activo']
+    list_filter = ['periodicidad', 'activo']
+    search_fields = ['nombre']
+    readonly_fields = ['created_at', 'updated_at']
     fieldsets = (
         ('Información del Concepto', {
-            'fields': ('nombre', 'descripcion', 'monto', 'es_mensualidad', 'activo')
+            'fields': ('nombre', 'monto_base', 'periodicidad', 'activo')
         }),
         ('Fechas', {
-            'fields': ('fecha_creacion', 'fecha_actualizacion'),
+            'fields': ('created_at', 'updated_at'),
             'classes': ('collapse',)
         }),
     )
@@ -21,20 +21,23 @@ class ConceptoPagoAdmin(admin.ModelAdmin):
 
 @admin.register(Pago)
 class PagoAdmin(admin.ModelAdmin):
-    list_display = ['estudiante', 'concepto', 'monto', 'fecha_pago', 'metodo_pago', 'estado']
-    list_filter = ['estado', 'metodo_pago', 'fecha_pago', 'concepto']
-    search_fields = ['estudiante__nombres', 'estudiante__apellidos', 'estudiante__numero_documento', 'referencia']
-    readonly_fields = ['fecha_creacion', 'fecha_actualizacion']
+    list_display = ['alumno', 'concepto', 'monto', 'fecha_pago', 'numero_recibo', 'estado']
+    list_filter = ['estado', 'metodo_pago', 'fecha_pago', 'anio', 'mes']
+    search_fields = ['alumno__dni', 'alumno__nombres', 'numero_recibo']
+    readonly_fields = ['created_at', 'updated_at']
     fieldsets = (
         ('Información del Pago', {
-            'fields': ('estudiante', 'concepto', 'monto', 'metodo_pago', 'estado')
+            'fields': ('alumno', 'concepto', 'monto', 'numero_recibo', 'metodo_pago', 'estado')
         }),
-        ('Comprobante y Referencia', {
-            'fields': ('comprobante', 'referencia', 'observaciones'),
+        ('Período', {
+            'fields': ('anio', 'mes', 'fecha_pago', 'fecha_vencimiento')
+        }),
+        ('Comprobante', {
+            'fields': ('comprobante_url', 'observaciones', 'usuario_registro'),
             'classes': ('collapse',)
         }),
         ('Fechas', {
-            'fields': ('fecha_pago', 'fecha_creacion', 'fecha_actualizacion'),
+            'fields': ('created_at', 'updated_at'),
             'classes': ('collapse',)
         }),
     )

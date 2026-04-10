@@ -9,8 +9,8 @@ class ConceptoPagoViewSet(viewsets.ModelViewSet):
     serializer_class = ConceptoPagoSerializer
     permission_classes = [IsAuthenticated]
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
-    search_fields = ['nombre', 'descripcion']
-    ordering_fields = ['nombre', 'monto']
+    search_fields = ['nombre']
+    ordering_fields = ['nombre', 'monto_base']
     ordering = ['nombre']
 
 
@@ -19,6 +19,6 @@ class PagoViewSet(viewsets.ModelViewSet):
     serializer_class = PagoSerializer
     permission_classes = [IsAuthenticated]
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
-    search_fields = ['estudiante__numero_documento', 'estudiante__nombres', 'estado']
-    ordering_fields = ['fecha_pago', 'monto', 'estado']
+    search_fields = ['alumno__dni', 'alumno__nombres', 'numero_recibo', 'estado']
+    ordering_fields = ['fecha_pago', 'monto', 'estado', 'anio']
     ordering = ['-fecha_pago']

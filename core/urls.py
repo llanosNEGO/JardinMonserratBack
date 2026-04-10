@@ -1,9 +1,12 @@
-from django.urls import path
-from django.http import HttpResponse
+from django.urls import path, include
+from rest_framework.routers import DefaultRouter
+from .views import GradoViewSet, SeccionViewSet, AlumnoViewSet
 
-def home(request):
-    return HttpResponse("API Jardín Monserrat - Servidor activo")
+router = DefaultRouter()
+router.register(r'grados', GradoViewSet, basename='grado')
+router.register(r'secciones', SeccionViewSet, basename='seccion')
+router.register(r'alumnos', AlumnoViewSet, basename='alumno')
 
 urlpatterns = [
-    path('', home, name='core-home'),
+    path('', include(router.urls)),
 ]
