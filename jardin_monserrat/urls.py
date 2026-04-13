@@ -28,6 +28,14 @@ urlpatterns = [
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     
     # App URLs
+    path('api/login/', TokenObtainPairView.as_view()),
+    path('api/refresh/', TokenRefreshView.as_view()),
+    
+    #usuarios
+    path('api/', include('usuarios.urls')),
+    #estudiantes
+    path('api/', include('estudiantes.urls')),
+    
     path('api/core/', include('core.urls')),
     path('api/matriculas/', include('matriculas.urls')),
     path('api/pagos/', include('pagos.urls')),

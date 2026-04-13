@@ -38,6 +38,8 @@ import os
 # Application definition
 
 INSTALLED_APPS = [
+    'usuarios',
+    'estudiantes',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -50,7 +52,8 @@ INSTALLED_APPS = [
     'core',
     'matriculas',
     'pagos',
-    'reportes'
+    'reportes',
+    
 ]
 
 MIDDLEWARE = [
@@ -92,9 +95,9 @@ DATABASES = {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': os.getenv('DB_NAME', 'JardinMonserrat'),
         'USER': os.getenv('DB_USER', 'root'),
-        'PASSWORD': os.getenv('DB_PASSWORD', ''),
+        'PASSWORD': os.getenv('DB_PASSWORD', 'Elthon_2026'),
         'HOST': os.getenv('DB_HOST', 'localhost'),
-        'PORT': os.getenv('DB_PORT', '3306'),
+        'PORT': os.getenv('DB_PORT', '3307'),
         'OPTIONS': {
             'charset': 'utf8mb4',
         }
@@ -141,6 +144,7 @@ STATIC_URL = 'static/'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
+AUTH_USER_MODEL = 'usuarios.Usuario'
 # CORS Configuration
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
